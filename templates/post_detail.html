@@ -3,18 +3,28 @@
 {% block title %}{{ post.drink_name }} — Aftertaste{% endblock %}
 
 {% block content %}
-<article class="sheet detail">
-  <p class="sheet-kicker">{{ _('detail.kicker') }}</p>
-  <h1 class="detail-drink">{{ post.drink_name }}</h1>
-  <p class="detail-body">{{ post.content }}</p>
-  <div class="note-meta">
-    <span>{{ _('feed.by', name=post.author_name) }}</span>
-    <span>{{ post.created_label }}</span>
-    {% if post.edited %}
-      <span>{{ _('detail.edited', when=post.updated_label) }}</span>
-    {% endif %}
+<article class="panel detail-panel">
+  <div class="detail-hero">
+    <p class="panel-kicker">{{ _('detail.kicker') }}</p>
+    <h1 class="detail-drink">{{ post.drink_name }}</h1>
+    <p class="detail-sub">{{ _('feed.by', name=post.author_name) }}</p>
+    <div class="detail-metrics">
+      <div>
+        <span>Напитков</span>
+        <strong>{{ post.like_count }}</strong>
+      </div>
+      <div>
+        <span>Комментариев</span>
+        <strong>{{ comments|length }}</strong>
+      </div>
+      <div>
+        <span>Опубликован</span>
+        <strong>{{ post.created_label }}</strong>
+      </div>
+    </div>
   </div>
-  <div class="note-actions">
+  <p class="detail-body">{{ post.content }}</p>
+  <div class="note-actions detail-actions">
     <button
       type="button"
       class="like-btn{% if post.liked %} is-liked{% endif %}"
@@ -40,7 +50,7 @@
   </div>
 </article>
 
-<section class="comments" aria-labelledby="comments-heading">
+<section class="panel comments-panel" aria-labelledby="comments-heading">
   <header class="notes-head">
     <h2 id="comments-heading">{{ _('comments.heading') }}</h2>
     <p>{{ _('comments.lede') }}</p>
