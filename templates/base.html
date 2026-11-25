@@ -1,19 +1,33 @@
-<!DOCTYPE html>
+{% load static aftertaste %}<!DOCTYPE html>
 <html lang="{{ lang }}" data-theme="{{ theme }}" style="--accent-h: {{ accent }};">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>{% block title %}Aftertaste{% endblock %}</title>
+  <meta name="description" content="Short takes on what you just sipped — coffee, cocktails, tea, anything in a glass.">
+  <meta name="theme-color" content="#4f39ea">
+  <meta name="csrf-token" content="{{ csrf_token }}">
+  <link rel="manifest" href="{% url 'feed:manifest' %}">
+  <link rel="icon" type="image/png" href="{% static 'icons/icon-192.png' %}">
+  <link rel="apple-touch-icon" href="{% static 'icons/icon-192.png' %}">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Aftertaste">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Manrope:wght@500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link rel="stylesheet" href="{% static 'css/style.css' %}">
+  <link rel="stylesheet" href="{% static 'css/app.css' %}">
 </head>
 <body
   class="{% block body_class %}{% endblock %}"
-  data-i18n-like="{{ _('like') }}"
-  data-i18n-liked="{{ _('liked') }}"
-  data-i18n-like-error="{{ _('like.error') }}"
+  data-i18n-like="{{ 'like'|tr:lang }}"
+  data-i18n-liked="{{ 'liked'|tr:lang }}"
+  data-i18n-like-error="{{ 'like.error'|tr:lang }}"
+  data-i18n-repost="{{ 'repost'|tr:lang }}"
+  data-i18n-reposted="{{ 'reposted'|tr:lang }}"
+  data-i18n-repost-error="{{ 'repost.error'|tr:lang }}"
+  data-i18n-quick-error="{{ 'quick.error'|tr:lang }}"
 >
   <div class="stage" aria-hidden="true">
     <div class="stage-wash"></div>
@@ -23,38 +37,46 @@
   </div>
 
   <header class="topbar">
-    <a class="mark" href="{{ url_for('posts.feed') }}">Aftertaste</a>
+    <a class="mark" href="{% url 'feed:home' %}">Aftertaste</a>
 
     <nav class="nav">
-      <a class="nav-link" href="{{ url_for('posts.about') }}">{{ _('nav.about') }}</a>
-      <a class="nav-link" href="{{ url_for('auth.settings') }}">{{ _('nav.settings') }}</a>
-      {% if g.user %}
-        <a class="nav-link" href="{{ url_for('posts.new_post') }}">{{ _('nav.write') }}</a>
-        <a class="nav-user" href="{{ url_for('auth.settings') }}">{{ g.user.username }}</a>
-        <form action="{{ url_for('auth.logout') }}" method="post" class="inline-form">
-          <button type="submit" class="nav-link as-button">{{ _('nav.sign_out') }}</button>
+      <a class="nav-link" href="{% url 'feed:home' %}">{{ 'nav.home'|tr:lang }}</a>
+      <a class="nav-link" href="{% url 'feed:home' %}?tab=popular">{{ 'nav.popular'|tr:lang }}</a>
+      <a class="nav-link" href="{% url 'feed:quick_add' %}">{{ 'nav.quick'|tr:lang }}</a>
+      {% if user.is_authenticated %}
+        <a class="nav-link nav-badge-link" href="{% url 'feed:notifications' %}">
+          {{ 'nav.notifications'|tr:lang }}
+          {% if unread_notifications %}<span class="nav-badge">{{ unread_notifications }}</span>{% endif %}
+        </a>
+        <a class="nav-link" href="{% url 'feed:settings' %}">{{ 'nav.settings'|tr:lang }}</a>
+        <a class="nav-link" href="{% url 'feed:about' %}">{{ 'nav.about'|tr:lang }}</a>
+        <a class="nav-link" href="{% url 'feed:take_create' %}">{{ 'nav.write'|tr:lang }}</a>
+        <a class="nav-user" href="{% url 'feed:profile' user.username %}">{% firstof user.profile.name user.username %}</a>
+        <form action="{% url 'feed:logout' %}" method="post" class="inline-form">
+          {% csrf_token %}
+          <button type="submit" class="nav-link as-button">{{ 'nav.sign_out'|tr:lang }}</button>
         </form>
       {% else %}
-        <a class="nav-link" href="{{ url_for('auth.login') }}">{{ _('nav.log_in') }}</a>
-        <a class="btn btn-sm" href="{{ url_for('auth.register') }}">{{ _('nav.join') }}</a>
+        <a class="nav-link" href="{% url 'feed:about' %}">{{ 'nav.about'|tr:lang }}</a>
+        <a class="nav-link" href="{% url 'feed:settings' %}">{{ 'nav.settings'|tr:lang }}</a>
+        <a class="nav-link" href="{% url 'feed:login' %}">{{ 'nav.log_in'|tr:lang }}</a>
+        <a class="btn btn-sm" href="{% url 'feed:register' %}">{{ 'nav.join'|tr:lang }}</a>
       {% endif %}
     </nav>
   </header>
 
-  {% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-      <div class="flash-rail" role="status">
-        {% for category, message in messages %}
-          <p class="flash flash-{{ category }}">{{ message }}</p>
-        {% endfor %}
-      </div>
-    {% endif %}
-  {% endwith %}
+  {% if messages %}
+    <div class="flash-rail" role="status">
+      {% for message in messages %}
+        <p class="flash flash-{{ message.tags }}">{{ message }}</p>
+      {% endfor %}
+    </div>
+  {% endif %}
 
   <main class="page app-shell">
     {% block content %}{% endblock %}
   </main>
 
-  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+  <script src="{% static 'js/main.js' %}" defer></script>
 </body>
 </html>

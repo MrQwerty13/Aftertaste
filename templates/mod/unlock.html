@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% load aftertaste %}
+
+{% block title %}{{ 'mod.unlock_heading'|tr:lang }} — Aftertaste{% endblock %}
+
+{% block content %}
+<section class="sheet">
+  <p class="sheet-kicker">Aftertaste</p>
+  <h1>{{ 'mod.unlock_heading'|tr:lang }}</h1>
+  <p class="sheet-lede">{{ 'mod.unlock_lede'|tr:lang }}</p>
+  <form method="post" class="stack-form">
+    {% csrf_token %}
+    <label>
+      {{ 'mod.key'|tr:lang }}
+      <input type="password" name="key" required autocomplete="current-password">
+    </label>
+    <button type="submit" class="btn">{{ 'mod.unlock'|tr:lang }}</button>
+  </form>
+</section>
+{% endblock %}

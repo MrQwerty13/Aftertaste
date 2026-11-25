@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% load aftertaste %}
+
+{% block title %}{{ 'notifications.title'|tr:lang }}{% endblock %}
+
+{% block content %}
+<section class="panel notifications-panel">
+  <header class="notes-head notes-head-row">
+    <div>
+      <p class="panel-kicker">{{ 'nav.notifications'|tr:lang }}</p>
+      <h1 class="profile-name">{{ 'notifications.heading'|tr:lang }}</h1>
+      <p class="panel-lede">{{ 'notifications.lede'|tr:lang }}</p>
+    </div>
+    <form action="{% url 'feed:mark_notifications_read' %}" method="post">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-ghost btn-sm">{{ 'notifications.mark_read'|tr:lang }}</button>
+    </form>
+  </header>
+
+  {% if items %}
+    <ol class="notifications-list">
+      {% for item in items %}
+        <li class="notification{% if not item.is_read %} is-unread{% endif %}">
+          <a class="avatar avatar-sm" href="{% url 'feed:profile' item.actor.username %}" aria-hidden="true">{{ item.actor.profile.initial }}</a>
+          <div class="notification-body">
+            <p>
+              <a class="note-author" href="{% url 'feed:profile' item.actor.username %}">{{ item.actor.profile.name }}</a>
+              {% if item.kind == 'like' %}{{ 'notifications.liked'|tr:lang }}
+              {% elif item.kind == 'comment' %}{{ 'notifications.commented'|tr:lang }}
+              {% elif item.kind == 'follow' %}{{ 'notifications.followed'|tr:lang }}
+              {% elif item.kind == 'repost' %}{{ 'notifications.reposted'|tr:lang }}
+              {% endif %}
+            </p>
+            {% if item.take %}
+              <a class="notification-take" href="{% url 'feed:take_detail' item.take.pk %}">{{ item.take.drink_name }}</a>
+            {% endif %}
+            {% if item.comment %}
+              <p class="notification-quote">“{{ item.comment.content }}”</p>
+            {% endif %}
+            <p class="note-time">{{ item.created_at|when:lang }}</p>
+          </div>
+          {% if not item.is_read %}<span class="tag">{{ 'notifications.new'|tr:lang }}</span>{% endif %}
+        </li>
+      {% endfor %}
+    </ol>
+  {% else %}
+    <p class="empty">{{ 'notifications.empty'|tr:lang }}</p>
+  {% endif %}
+</section>
+{% endblock %}

@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% load aftertaste %}
+
+{% block title %}{{ 'register.title'|tr:lang }}{% endblock %}
+
+{% block content %}
+<section class="sheet">
+  <p class="sheet-kicker">Aftertaste</p>
+  <h1>{{ 'register.heading'|tr:lang }}</h1>
+  <p class="sheet-lede">{{ 'register.lede'|tr:lang }}</p>
+
+  <form method="post" class="stack-form">
+    {% csrf_token %}
+    {% if form.non_field_errors %}
+      <p class="flash flash-error">{{ form.non_field_errors.0 }}</p>
+    {% endif %}
+    <label>
+      {{ 'field.username'|tr:lang }}
+      {{ form.username }}
+      {% if form.username.errors %}<span class="field-error">{{ form.username.errors.0 }}</span>{% endif %}
+    </label>
+    <label>
+      {{ 'field.email'|tr:lang }}
+      {{ form.email }}
+      {% if form.email.errors %}<span class="field-error">{{ form.email.errors.0 }}</span>{% endif %}
+    </label>
+    <label>
+      {{ 'field.password'|tr:lang }}
+      {{ form.password1 }}
+      {% if form.password1.errors %}<span class="field-error">{{ form.password1.errors.0 }}</span>{% endif %}
+    </label>
+    <label>
+      {{ 'field.password_repeat'|tr:lang }}
+      {{ form.password2 }}
+      {% if form.password2.errors %}<span class="field-error">{{ form.password2.errors.0 }}</span>{% endif %}
+    </label>
+    <button type="submit" class="btn">{{ 'register.submit'|tr:lang }}</button>
+  </form>
+
+  <p class="sheet-foot">{{ 'register.foot'|tr:lang }} <a href="{% url 'feed:login' %}">{{ 'nav.log_in'|tr:lang }}</a></p>
+</section>
+{% endblock %}

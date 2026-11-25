@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% load aftertaste %}
+
+{% block title %}{% if mode == 'edit' %}{{ 'edit.title'|tr:lang }}{% else %}{{ 'compose.title'|tr:lang }}{% endif %}{% endblock %}
+
+{% block content %}
+<section class="sheet">
+  <p class="sheet-kicker">Aftertaste</p>
+  <h1>{% if mode == 'edit' %}{{ 'edit.heading'|tr:lang }}{% else %}{{ 'compose.heading'|tr:lang }}{% endif %}</h1>
+  <p class="sheet-lede">{% if mode == 'edit' %}{{ 'edit.lede'|tr:lang }}{% else %}{{ 'compose.lede'|tr:lang }}{% endif %}</p>
+
+  <form method="post" class="stack-form">
+    {% csrf_token %}
+    {% if form.non_field_errors %}
+      <p class="flash flash-error">{{ form.non_field_errors.0 }}</p>
+    {% endif %}
+    <label>
+      {{ 'compose.drink'|tr:lang }}
+      {{ form.drink_name }}
+      {% if form.drink_name.errors %}<span class="field-error">{{ form.drink_name.errors.0 }}</span>{% endif %}
+    </label>
+    <label>
+      {{ 'compose.take'|tr:lang }}
+      {{ form.content }}
+      {% if form.content.errors %}<span class="field-error">{{ form.content.errors.0 }}</span>{% endif %}
+    </label>
+    <div class="form-actions">
+      <button type="submit" class="btn">{% if mode == 'edit' %}{{ 'edit.submit'|tr:lang }}{% else %}{{ 'compose.submit'|tr:lang }}{% endif %}</button>
+      {% if mode == 'edit' %}
+        <a class="btn btn-ghost" href="{% url 'feed:take_detail' take.pk %}">{{ 'edit.cancel'|tr:lang }}</a>
+      {% else %}
+        <a class="btn btn-ghost" href="{% url 'feed:home' %}">{{ 'edit.cancel'|tr:lang }}</a>
+      {% endif %}
+    </div>
+  </form>
+</section>
+{% endblock %}

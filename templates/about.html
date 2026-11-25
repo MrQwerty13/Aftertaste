@@ -1,38 +1,39 @@
 {% extends "base.html" %}
+{% load aftertaste %}
 
-{% block title %}{{ _('about.title') }}{% endblock %}
+{% block title %}{{ 'about.title'|tr:lang }}{% endblock %}
 {% block body_class %}page-about{% endblock %}
 
 {% block content %}
 <article class="sheet about-sheet">
-  <p class="sheet-kicker">{{ _('about.kicker') }}</p>
-  <h1>{{ _('about.heading') }}</h1>
-  <p class="about-role">{{ _('about.role') }}</p>
+  <p class="sheet-kicker">{{ 'about.kicker'|tr:lang }}</p>
+  <h1>{{ 'about.heading'|tr:lang }}</h1>
+  <p class="about-role">{{ 'about.role'|tr:lang }}</p>
 
   <div class="about-body">
-    <p>{{ _('about.p1') }}</p>
-    <p>{{ _('about.p2') }}</p>
-    <p>{{ _('about.p3') }}</p>
+    <p>{{ 'about.p1'|tr:lang }}</p>
+    <p>{{ 'about.p2'|tr:lang }}</p>
+    <p>{{ 'about.p3'|tr:lang }}</p>
   </div>
 
   <ul class="about-facts">
     <li>
-      <span class="about-fact-label">{{ _('about.based') }}</span>
-      <span>{{ _('about.based_value') }}</span>
+      <span class="about-fact-label">{{ 'about.based'|tr:lang }}</span>
+      <span>{{ 'about.based_value'|tr:lang }}</span>
     </li>
     <li>
-      <span class="about-fact-label">{{ _('about.stack') }}</span>
-      <span>{{ _('about.stack_value') }}</span>
+      <span class="about-fact-label">{{ 'about.stack'|tr:lang }}</span>
+      <span>{{ 'about.stack_value'|tr:lang }}</span>
     </li>
     <li>
-      <span class="about-fact-label">{{ _('about.elsewhere') }}</span>
+      <span class="about-fact-label">{{ 'about.elsewhere'|tr:lang }}</span>
       <a href="https://github.com/MrQwerty13" target="_blank" rel="noopener noreferrer">GitHub</a>
     </li>
   </ul>
 
   <div class="hero-actions about-actions">
-    <a class="btn" href="{{ url_for('posts.feed') }}">{{ _('about.back') }}</a>
-    <a class="btn btn-ghost" href="https://github.com/MrQwerty13/myWebPage" target="_blank" rel="noopener noreferrer">{{ _('about.repo') }}</a>
+    <a class="btn" href="{% url 'feed:home' %}">{{ 'about.back'|tr:lang }}</a>
+    <a class="btn btn-ghost" href="https://github.com/MrQwerty13/Aftertaste" target="_blank" rel="noopener noreferrer">{{ 'about.repo'|tr:lang }}</a>
   </div>
 </article>
 {% endblock %}

@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% load static aftertaste %}
+
+{% block body_class %}page-quick{% endblock %}
+{% block title %}{{ 'quick.title'|tr:lang }}{% endblock %}
+
+{% block content %}
+<section class="panel quick-panel">
+  <div class="panel-top">
+    <div>
+      <p class="panel-kicker">{{ 'nav.quick'|tr:lang }}</p>
+      <h1 class="quick-heading">{{ 'quick.heading'|tr:lang }}</h1>
+      <p class="panel-lede">{{ 'quick.lede'|tr:lang }}</p>
+    </div>
+    <button type="button" class="panel-icon-btn" id="pwa-install" hidden aria-label="{{ 'quick.install'|tr:lang }}">&#8681;</button>
+  </div>
+
+  {% if not user.is_authenticated %}
+    <div class="quick-auth">
+      <p class="empty">{{ 'quick.login'|tr:lang }}</p>
+      <div class="hero-actions">
+        <a class="btn" href="{% url 'feed:login' %}?next={% url 'feed:quick_add' %}">{{ 'nav.log_in'|tr:lang }}</a>
+        <a class="btn btn-ghost" href="{% url 'feed:register' %}">{{ 'nav.join'|tr:lang }}</a>
+      </div>
+    </div>
+  {% else %}
+    <form
+      id="quick-form"
+      action="{% url 'feed:quick_add' %}"
+      method="post"
+      class="stack-form quick-form"
+      data-success="{{ 'quick.success'|tr:lang }}"
+      data-error="{{ 'quick.error'|tr:lang }}"
+    >
+      {% csrf_token %}
+      <div class="quick-chips" aria-label="{{ 'quick.chips'|tr:lang }}">
+        <span class="quick-chips-label">{{ 'quick.chips'|tr:lang }}</span>
+        <button type="button" class="quick-chip" data-drink="Coffee">{{ 'quick.chip_coffee'|tr:lang }}</button>
+        <button type="button" class="quick-chip" data-drink="Tea">{{ 'quick.chip_tea'|tr:lang }}</button>
+        <button type="button" class="quick-chip" data-drink="Cocktail">{{ 'quick.chip_cocktail'|tr:lang }}</button>
+        <button type="button" class="quick-chip" data-drink="Beer">{{ 'quick.chip_beer'|tr:lang }}</button>
+        <button type="button" class="quick-chip" data-drink="Water">{{ 'quick.chip_water'|tr:lang }}</button>
+      </div>
+      <label>
+        {{ 'quick.drink'|tr:lang }}
+        {{ form.drink_name }}
+        {% if form.drink_name.errors %}<span class="field-error">{{ form.drink_name.errors.0 }}</span>{% endif %}
+      </label>
+      <label>
+        {{ 'quick.take'|tr:lang }}
+        {{ form.content }}
+        {% if form.content.errors %}<span class="field-error">{{ form.content.errors.0 }}</span>{% endif %}
+      </label>
+      <button type="submit" class="btn quick-submit">{{ 'quick.submit'|tr:lang }}</button>
+    </form>
+    <p class="quick-status" id="quick-status" role="status" aria-live="polite"></p>
+  {% endif %}
+</section>
+{% endblock %}

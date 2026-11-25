@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+{% load aftertaste %}
+
+{% block title %}{{ take.drink_name }} — Aftertaste{% endblock %}
+
+{% block content %}
+<article class="panel detail-panel">
+  <div class="detail-hero">
+    <p class="panel-kicker">{{ 'detail.kicker'|tr:lang }}</p>
+    <h1 class="detail-drink">{{ take.drink_name }}</h1>
+    <p class="detail-sub">
+      <a class="text-link" href="{% url 'feed:profile' take.author.username %}">{{ take.author.profile.name|byline:lang }}</a>
+      · @{{ take.author.username }}
+    </p>
+    {% if take.is_edited %}
+      <p class="detail-edited">{{ 'detail.edited'|tr:lang }} {{ take.updated_at|when:lang }}</p>
+    {% endif %}
+    <div class="detail-metrics">
+      <div>
+        <span>{{ 'detail.likes'|tr:lang }}</span>
+        <strong>{{ take.like_count }}</strong>
+      </div>
+      <div>
+        <span>{{ 'detail.comments'|tr:lang }}</span>
+        <strong>{{ take.comment_count }}</strong>
+      </div>
+      <div>
+        <span>{{ 'detail.reposts'|tr:lang }}</span>
+        <strong>{{ take.repost_count }}</strong>
+      </div>
+      <div>
+        <span>{{ 'detail.published'|tr:lang }}</span>
+        <strong>{{ take.created_at|when:lang }}</strong>
+      </div>
+    </div>
+  </div>
+  <p class="detail-body">{{ take.content }}</p>
+  <div class="note-actions detail-actions">
+    <button
+      type="button"
+      class="like-btn{% if take.liked_by_me %} is-liked{% endif %}"
+      data-url="{% url 'feed:like_toggle' take.pk %}"
+      data-liked="{{ take.liked_by_me|yesno:'true,false' }}"
+      {% if not user.is_authenticated %}disabled title="{{ 'like.login'|tr:lang }}"{% endif %}
+    >
+      <span class="like-label">{% if take.liked_by_me %}{{ 'liked'|tr:lang }}{% else %}{{ 'like'|tr:lang }}{% endif %}</span>
+      <span class="like-count" data-count>{{ take.like_count }}</span>
+    </button>
+    <button
+      type="button"
+      class="repost-btn{% if take.reposted_by_me %} is-reposted{% endif %}"
+      data-url="{% url 'feed:repost_toggle' take.pk %}"
+      data-reposted="{{ take.reposted_by_me|yesno:'true,false' }}"
+      {% if not user.is_authenticated %}disabled title="{{ 'repost.login'|tr:lang }}"{% endif %}
+    >
+      <span class="repost-label">{% if take.reposted_by_me %}{{ 'reposted'|tr:lang }}{% else %}{{ 'repost'|tr:lang }}{% endif %}</span>
+      <span class="repost-count" data-count>{{ take.repost_count }}</span>
+    </button>
+    {% if user == take.author %}
+      <a class="text-link" href="{% url 'feed:take_edit' take.pk %}">{{ 'post.edit'|tr:lang }}</a>
+      <form
+        action="{% url 'feed:take_delete' take.pk %}"
+        method="post"
+        class="inline-form"
+        onsubmit="return confirm('{{ 'post.delete_confirm'|tr:lang|escapejs }}');"
+      >
+        {% csrf_token %}
+        <button type="submit" class="text-link as-button danger-link">{{ 'post.delete'|tr:lang }}</button>
+      </form>
+    {% endif %}
+    <a class="text-link" href="{% url 'feed:home' %}">{{ 'detail.back'|tr:lang }}</a>
+  </div>
+</article>
+
+<section class="panel comments-panel" aria-labelledby="comments-heading">
+  <header class="notes-head">
+    <h2 id="comments-heading">{{ 'comments.heading'|tr:lang }}</h2>
+    <p>{{ 'comments.lede'|tr:lang }}</p>
+  </header>
+
+  {% if comments %}
+    <ol class="comments-list">
+      {% for comment in comments %}
+        <li class="comment" style="--i: {{ forloop.counter0 }}">
+          <div class="comment-head">
+            <a class="avatar avatar-sm" href="{% url 'feed:profile' comment.author.username %}" aria-hidden="true">{{ comment.author.profile.initial }}</a>
+            <div>
+              <a class="note-author" href="{% url 'feed:profile' comment.author.username %}">{{ comment.author.profile.name }}</a>
+              <div class="note-time">@{{ comment.author.username }} · {{ comment.created_at|when:lang }}</div>
+            </div>
+          </div>
+          <p class="comment-body">{{ comment.content }}</p>
+          {% if user == comment.author %}
+            <div class="note-actions">
+              <form
+                action="{% url 'feed:comment_delete' take.pk comment.pk %}"
+                method="post"
+                class="inline-form"
+                onsubmit="return confirm('{{ 'comments.delete_confirm'|tr:lang|escapejs }}');"
+              >
+                {% csrf_token %}
+                <button type="submit" class="text-link as-button danger-link">{{ 'comments.delete'|tr:lang }}</button>
+              </form>
+            </div>
+          {% endif %}
+        </li>
+      {% endfor %}
+    </ol>
+  {% else %}
+    <p class="empty">{{ 'comments.empty'|tr:lang }}</p>
+  {% endif %}
+
+  {% if user.is_authenticated %}
+    <form action="{% url 'feed:comment_create' take.pk %}" method="post" class="stack-form comment-form">
+      {% csrf_token %}
+      <label>
+        {{ 'comments.field'|tr:lang }}
+        <textarea name="content" required maxlength="280" rows="3" placeholder="{{ 'comments.ph'|tr:lang }}"></textarea>
+      </label>
+      <button type="submit" class="btn">{{ 'comments.submit'|tr:lang }}</button>
+    </form>
+  {% else %}
+    <p class="empty">
+      <a class="text-link" href="{% url 'feed:login' %}">{{ 'comments.login'|tr:lang }}</a>
+    </p>
+  {% endif %}
+</section>
+{% endblock %}

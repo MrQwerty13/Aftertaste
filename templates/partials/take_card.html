@@ -1,0 +1,57 @@
+{% load aftertaste %}
+<li class="note-card" style="--i: {{ forloop.counter0 }}">
+  {% if entry.is_repost %}
+    <p class="repost-banner">&#8635; {{ entry.actor.profile.name|reposted_by:lang }}</p>
+  {% endif %}
+  <div class="note-head">
+    <a class="avatar" href="{% url 'feed:profile' take.author.username %}" aria-hidden="true">{{ take.author.profile.initial }}</a>
+    <div class="note-identity">
+      <a class="note-author" href="{% url 'feed:profile' take.author.username %}">{{ take.author.profile.name }}</a>
+      <div class="note-time">@{{ take.author.username }} · {{ take.created_at|when:lang }}</div>
+    </div>
+    <button class="note-menu" type="button" aria-label="More">···</button>
+  </div>
+  <div class="note-main">
+    <a class="note-drink" href="{% url 'feed:take_detail' take.pk %}">{{ take.drink_name }}</a>
+    <p class="note-body">{{ take.content }}</p>
+    <div class="note-meta">
+      <span class="tag">{{ take.author.profile.name|byline:lang }}</span>
+      <span class="tag tag-soft">{{ take.comment_count|comments_label:lang }}</span>
+    </div>
+    <div class="note-actions">
+      <button
+        type="button"
+        class="like-btn{% if take.liked_by_me %} is-liked{% endif %}"
+        data-url="{% url 'feed:like_toggle' take.pk %}"
+        data-liked="{{ take.liked_by_me|yesno:'true,false' }}"
+        {% if not user.is_authenticated %}disabled title="{{ 'like.login'|tr:lang }}"{% endif %}
+      >
+        <span class="like-label">{% if take.liked_by_me %}{{ 'liked'|tr:lang }}{% else %}{{ 'like'|tr:lang }}{% endif %}</span>
+        <span class="like-count" data-count>{{ take.like_count }}</span>
+      </button>
+      <button
+        type="button"
+        class="repost-btn{% if take.reposted_by_me %} is-reposted{% endif %}"
+        data-url="{% url 'feed:repost_toggle' take.pk %}"
+        data-reposted="{{ take.reposted_by_me|yesno:'true,false' }}"
+        {% if not user.is_authenticated %}disabled title="{{ 'repost.login'|tr:lang }}"{% endif %}
+      >
+        <span class="repost-label">{% if take.reposted_by_me %}{{ 'reposted'|tr:lang }}{% else %}{{ 'repost'|tr:lang }}{% endif %}</span>
+        <span class="repost-count" data-count>{{ take.repost_count }}</span>
+      </button>
+      <a class="text-link" href="{% url 'feed:take_detail' take.pk %}">{{ 'feed.open'|tr:lang }}</a>
+      {% if user == take.author %}
+        <a class="text-link" href="{% url 'feed:take_edit' take.pk %}">{{ 'post.edit'|tr:lang }}</a>
+        <form
+          action="{% url 'feed:take_delete' take.pk %}"
+          method="post"
+          class="inline-form"
+          onsubmit="return confirm('{{ 'post.delete_confirm'|tr:lang|escapejs }}');"
+        >
+          {% csrf_token %}
+          <button type="submit" class="text-link as-button danger-link">{{ 'post.delete'|tr:lang }}</button>
+        </form>
+      {% endif %}
+    </div>
+  </div>
+</li>

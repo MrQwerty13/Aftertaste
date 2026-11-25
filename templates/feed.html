@@ -1,20 +1,22 @@
 {% extends "base.html" %}
+{% load aftertaste %}
 
 {% block body_class %}page-home{% endblock %}
-{% block title %}{{ _('feed.title') }}{% endblock %}
+{% block title %}{{ 'feed.title'|tr:lang }}{% endblock %}
 
 {% block content %}
 <section class="phone-mast">
   <div class="hero">
-    <p class="hero-kicker">{{ _('feed.kicker') }}</p>
+    <p class="hero-kicker">{{ 'feed.kicker'|tr:lang }}</p>
     <h1 class="hero-brand">Aftertaste</h1>
-    <p class="hero-lede">{{ _('feed.lede') }}</p>
+    <p class="hero-lede">{{ 'feed.lede'|tr:lang }}</p>
     <div class="hero-actions">
-      {% if g.user %}
-        <a class="btn" href="{{ url_for('posts.new_post') }}">{{ _('nav.write') }}</a>
+      {% if user.is_authenticated %}
+        <a class="btn" href="{% url 'feed:take_create' %}">{{ 'nav.write'|tr:lang }}</a>
+        <a class="btn btn-ghost" href="{% url 'feed:quick_add' %}">{{ 'nav.quick'|tr:lang }}</a>
       {% else %}
-        <a class="btn" href="{{ url_for('auth.register') }}">{{ _('feed.create_account') }}</a>
-        <a class="btn btn-ghost" href="{{ url_for('auth.login') }}">{{ _('nav.log_in') }}</a>
+        <a class="btn" href="{% url 'feed:register' %}">{{ 'feed.create_account'|tr:lang }}</a>
+        <a class="btn btn-ghost" href="{% url 'feed:login' %}">{{ 'nav.log_in'|tr:lang }}</a>
       {% endif %}
     </div>
   </div>
@@ -23,65 +25,39 @@
 <section class="panel feed-panel" aria-labelledby="feed-heading">
   <div class="panel-top">
     <div>
-      <p class="panel-kicker">{{ _('feed.kicker') }}</p>
-      <h2 id="feed-heading">{{ _('feed.latest') }}</h2>
-      <p class="panel-lede">{{ _('feed.latest_lede') }}</p>
+      <p class="panel-kicker">{{ 'feed.kicker'|tr:lang }}</p>
+      <h2 id="feed-heading">{{ 'feed.latest'|tr:lang }}</h2>
+      <p class="panel-lede">{{ 'feed.latest_lede'|tr:lang }}</p>
     </div>
-    <a class="panel-icon-btn" href="{{ url_for('posts.new_post') }}" aria-label="{{ _('nav.write') }}">+</a>
+    <a class="panel-icon-btn" href="{% url 'feed:take_create' %}" aria-label="{{ 'nav.write'|tr:lang }}">+</a>
   </div>
 
   <div class="tab-row" role="tablist" aria-label="Feed sections">
-    <button class="tab is-active" type="button">Лента</button>
-    <button class="tab" type="button">Подписки</button>
-    <button class="tab" type="button">Популярное</button>
+    <a class="tab{% if tab == 'all' %} is-active{% endif %}" href="{% url 'feed:home' %}?tab=all" role="tab">{{ 'feed.tabs.all'|tr:lang }}</a>
+    <a class="tab{% if tab == 'following' %} is-active{% endif %}" href="{% url 'feed:home' %}?tab=following" role="tab">{{ 'feed.tabs.following'|tr:lang }}</a>
+    <a class="tab{% if tab == 'popular' %} is-active{% endif %}" href="{% url 'feed:home' %}?tab=popular" role="tab">{{ 'feed.tabs.popular'|tr:lang }}</a>
   </div>
 
-  <div class="composer">
-    <span>{{ _('feed.create_account') if not g.user else _('nav.write') }}</span>
-    <a class="composer-btn" href="{{ url_for('posts.new_post') }}">+</a>
-  </div>
+  <a class="composer" href="{% url 'feed:take_create' %}">
+    <span>{% if user.is_authenticated %}{{ 'feed.composer'|tr:lang }}{% else %}{{ 'feed.create_account'|tr:lang }}{% endif %}</span>
+    <span class="composer-btn" aria-hidden="true">+</span>
+  </a>
 
-  {% if posts %}
+  {% if tab == 'following' and not user.is_authenticated %}
+    <p class="empty">
+      {{ 'follow.login'|tr:lang }} —
+      <a class="text-link" href="{% url 'feed:login' %}">{{ 'nav.log_in'|tr:lang }}</a>
+    </p>
+  {% elif entries %}
     <ol class="notes-list">
-      {% for post in posts %}
-        <li class="note-card" style="--i: {{ loop.index0 }}">
-          <div class="note-head">
-            <div class="avatar" aria-hidden="true">{{ post.author_name[:1] | upper }}</div>
-            <div>
-              <div class="note-author">{{ post.author_name }}</div>
-              <div class="note-time">{{ post.created_label }}</div>
-            </div>
-            <button class="note-menu" type="button" aria-label="More">···</button>
-          </div>
-          <div class="note-main">
-            <a class="note-drink" href="{{ url_for('posts.detail', post_id=post.id) }}">{{ post.drink_name }}</a>
-            <p class="note-body">{{ post.content }}</p>
-            <div class="note-meta">
-              <span class="tag">{{ _('feed.by', name=post.author_name) }}</span>
-              <span class="tag tag-soft">{{ post.comment_count }} comments</span>
-            </div>
-            <div class="note-actions">
-              <button
-                type="button"
-                class="like-btn{% if post.liked %} is-liked{% endif %}"
-                data-post-id="{{ post.id }}"
-                data-liked="{{ 'true' if post.liked else 'false' }}"
-                {% if not g.user %}disabled title="{{ _('like.login') }}"{% endif %}
-              >
-                <span class="like-label">{% if post.liked %}{{ _('liked') }}{% else %}{{ _('like') }}{% endif %}</span>
-                <span class="like-count" data-count>{{ post.like_count }}</span>
-              </button>
-              <a class="text-link" href="{{ url_for('posts.detail', post_id=post.id) }}">{{ _('feed.comments', count=post.comment_count) }}</a>
-              {% if post.is_owner %}
-                <a class="text-link" href="{{ url_for('posts.edit_post', post_id=post.id) }}">{{ _('post.edit') }}</a>
-              {% endif %}
-            </div>
-          </div>
-        </li>
+      {% for entry in entries %}
+        {% include "partials/take_card.html" with take=entry.take entry=entry %}
       {% endfor %}
     </ol>
   {% else %}
-    <p class="empty">{{ _('feed.empty') }}</p>
+    <p class="empty">
+      {% if tab == 'following' %}{{ 'feed.empty_following'|tr:lang }}{% else %}{{ 'feed.empty'|tr:lang }}{% endif %}
+    </p>
   {% endif %}
 </section>
 {% endblock %}

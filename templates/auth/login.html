@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% load aftertaste %}
+
+{% block title %}{{ 'login.title'|tr:lang }}{% endblock %}
+
+{% block content %}
+<section class="sheet">
+  <p class="sheet-kicker">Aftertaste</p>
+  <h1>{{ 'login.heading'|tr:lang }}</h1>
+  <p class="sheet-lede">{{ 'login.lede'|tr:lang }}</p>
+
+  <form method="post" class="stack-form">
+    {% csrf_token %}
+    {% if request.GET.next %}<input type="hidden" name="next" value="{{ request.GET.next }}">{% endif %}
+    {% if form.non_field_errors %}
+      <p class="flash flash-error">{{ form.non_field_errors.0 }}</p>
+    {% endif %}
+    <label>
+      {{ 'login.identifier'|tr:lang }}
+      {{ form.identifier }}
+      {% if form.identifier.errors %}<span class="field-error">{{ form.identifier.errors.0 }}</span>{% endif %}
+    </label>
+    <label>
+      {{ 'field.password'|tr:lang }}
+      {{ form.password }}
+      {% if form.password.errors %}<span class="field-error">{{ form.password.errors.0 }}</span>{% endif %}
+    </label>
+    <button type="submit" class="btn">{{ 'login.submit'|tr:lang }}</button>
+  </form>
+
+  <p class="sheet-foot">{{ 'login.foot'|tr:lang }} <a href="{% url 'feed:register' %}">{{ 'feed.create_account'|tr:lang }}</a></p>
+</section>
+{% endblock %}
