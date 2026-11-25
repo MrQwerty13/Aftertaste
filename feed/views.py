@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import secrets
 from urllib.parse import urlsplit
 
 from django.conf import settings
@@ -111,7 +112,13 @@ def login_view(request: HttpRequest) -> HttpResponse:
                 .order_by("id")
                 .first()
             )
-            if user and user.is_active and user.check_password(password):
+            # Always run a password hash comparison, even for unknown users,
+            # so response timing does not leak account existence.
+            dummy = User(password="!invalid")
+            candidate = user if user is not None else dummy
+            password_ok = candidate.check_password(password)
+            if user and user.is_active and password_ok:
+                # ``login()`` already rotates the session key (anti-fixation).
                 login(request, user)
                 messages.success(
                     request,
@@ -526,13 +533,28 @@ def mod_home(request: HttpRequest) -> HttpResponse:
     lang = request_lang(request)
     if request.method == "POST":
         key = (request.POST.get("key") or "").strip()
-        if key and key == settings.MODERATION_KEY:
+        configured = (settings.MODERATION_KEY or "").strip()
+        # Fail closed: an unconfigured MODERATION_KEY disables the panel.
+        if (
+            configured
+            and key
+            and secrets.compare_digest(key, configured)
+        ):
+            # Rotate the session id to prevent session fixation on the
+            # newly-privileged session.
+            request.session.cycle_key()
             request.session["is_moderator"] = True
             messages.success(request, translate(lang, "mod.unlocked"))
             return redirect("feed:mod_home")
         messages.error(request, translate(lang, "mod.bad_key"))
 
     if not _is_moderator(request):
+        return render(request, "mod/unlock.html")
+
+    # Even an already-unlocked session must not act when the key has been
+    # rotated away / removed from the environment.
+    if not (settings.MODERATION_KEY or "").strip():
+        request.session.pop("is_moderator", None)
         return render(request, "mod/unlock.html")
 
     takes = list(
@@ -545,7 +567,8 @@ def mod_home(request: HttpRequest) -> HttpResponse:
 
 @require_POST
 def mod_delete(request: HttpRequest, pk: int) -> HttpResponse:
-    if not _is_moderator(request):
+    configured = (settings.MODERATION_KEY or "").strip()
+    if not configured or not _is_moderator(request):
         return redirect("feed:mod_home")
     lang = request_lang(request)
     take = get_object_or_404(Take, pk=pk)

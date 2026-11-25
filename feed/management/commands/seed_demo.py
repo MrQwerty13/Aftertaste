@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import os
+
 from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand
 from django.db import transaction
@@ -7,6 +9,10 @@ from django.db import transaction
 from feed.models import Comment, Follow, Like, Notification, Profile, Repost, Take
 
 User = get_user_model()
+
+# Demo accounts use a weak shared password by default. Override with
+# DEMO_PASSWORD when seeding anything that is reachable from a network.
+DEMO_PASSWORD = os.environ.get("DEMO_PASSWORD", "password")
 
 
 class Command(BaseCommand):
@@ -33,14 +39,14 @@ class Command(BaseCommand):
             username="anna", defaults={"email": "anna@example.com"}
         )
         anna.email = "anna@example.com"
-        anna.set_password("password")
+        anna.set_password(DEMO_PASSWORD)
         anna.save()
 
         leo, _ = User.objects.get_or_create(
             username="leo", defaults={"email": "leo@example.com"}
         )
         leo.email = "leo@example.com"
-        leo.set_password("password")
+        leo.set_password(DEMO_PASSWORD)
         leo.save()
 
         Profile.objects.update_or_create(
@@ -158,6 +164,6 @@ class Command(BaseCommand):
             self.stdout.write(
                 self.style.SUCCESS(
                     "Seeded demo users anna@example.com / leo@example.com "
-                    "(password: password)."
+                    f"(password: {DEMO_PASSWORD})."
                 )
             )
