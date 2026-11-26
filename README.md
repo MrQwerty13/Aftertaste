@@ -136,7 +136,8 @@ catalogs or database-backed translations are required.
 ## Moderation
 
 1. Open `/del`
-2. Enter the moderation key (default: `wanna_clean`)
+2. Enter the moderation key (configured via the `MODERATION_KEY` environment
+   variable; there is no default — if it is unset, the panel stays locked)
 3. Delete takes as needed
 
 The panel is session-based and intentionally not linked from the UI.
@@ -165,10 +166,14 @@ moderation, account deletion, and Russian rendering.
 
 | Variable | Default | Purpose |
 | --- | --- | --- |
-| `SECRET_KEY` | insecure development key | Set a real secret in production |
-| `DJANGO_DEBUG` | `1` | Set to `0` in production |
-| `DJANGO_ALLOWED_HOSTS` | `*` | Comma-separated hostnames |
-| `MODERATION_KEY` | `wanna_clean` | Unlock key for `/del` |
+| `SECRET_KEY` | dev-only fallback (insecure) | **Required** outside `runserver`; startup fails without it |
+| `DJANGO_DEBUG` | on for `manage.py runserver`, off otherwise | Force with `1`/`0` |
+| `DJANGO_ALLOWED_HOSTS` | `*` in dev only | **Required** when `DEBUG=0`; comma-separated hostnames |
+| `MODERATION_KEY` | empty (panel disabled) | Unlock key for `/del`; set a long random value |
+| `DEMO_PASSWORD` | `password` | Password used by `seed_demo` demo accounts |
+| `DJANGO_SESSION_COOKIE_SECURE` | off in debug, on in prod | `Secure` flag on session/CSRF cookies |
+| `DJANGO_SECURE_SSL_REDIRECT` | off in debug, on in prod | HTTP→HTTPS redirect |
+| `DJANGO_SECURE_HSTS_SECONDS` | `0` | Enable HSTS once HTTPS is guaranteed |
 
 Example:
 

@@ -229,6 +229,23 @@ class FeedTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertFalse(self.client.session.get("is_moderator"))
 
+    @override_settings(MODERATION_KEY="")
+    def test_moderation_disabled_without_key(self):
+        # Fail closed: with no configured key the panel cannot be unlocked.
+        response = self.client.post(reverse("feed:mod_home"), {"key": ""})
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(self.client.session.get("is_moderator"))
+
+        # A pre-set moderator session must not be able to delete either.
+        session = self.client.session
+        session["is_moderator"] = True
+        session.save()
+        response = self.client.post(
+            reverse("feed:mod_delete", args=[self.take.pk])
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(Take.objects.filter(pk=self.take.pk).exists())
+
     def test_preferences_set_cookie(self):
         response = self.client.post(reverse("feed:set_theme"), {"theme": "dark"})
         self.assertEqual(response.status_code, 302)

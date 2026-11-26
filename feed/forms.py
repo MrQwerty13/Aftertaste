@@ -27,6 +27,10 @@ class RegisterForm(UserCreationForm):
     def __init__(self, *args, lang: str = "en", **kwargs):
         super().__init__(*args, **kwargs)
         self.lang = lang
+        # Password fields must never round-trip through the browser/autocomplete.
+        for name in ("password1", "password2"):
+            if name in self.fields:
+                self.fields[name].widget.attrs["autocomplete"] = "new-password"
         for field in self.fields.values():
             field.widget.attrs.setdefault("autocomplete", "off")
 
